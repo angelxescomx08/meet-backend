@@ -1,6 +1,6 @@
 import express, { Express } from "express";
 import http from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 export class AppServer {
@@ -12,6 +12,7 @@ export class AppServer {
     DefaultEventsMap,
     any
   >;
+  private clients = new Map<string, Socket>();
 
   constructor() {
     this.initServer();
@@ -31,11 +32,14 @@ export class AppServer {
   initSocket() {
     this.io.on("connection", (socket) => {
       console.log("Cliente conectado");
-
-      socket.on("start-stream", ({ type, data }) => {
-        console.log({ type, data });
-        socket.broadcast.emit("start-stream", { type, data });
-      });
+      socket.on(
+        "start-stream",
+        ({ id, tracks }: { id: string; tracks: MediaStreamTrack[] }) => {
+          console.log({ id, tracks });
+          //this.clients.set(id, socket);
+          //socket.broadcast.emit("start-stream", { id, tracks });
+        }
+      );
 
       socket.on("disconnect", () => {
         console.log("Cliente desconectado");
